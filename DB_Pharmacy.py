@@ -8,7 +8,7 @@ curseur = connexion.cursor()
 # Medicament table
 curseur.execute('''
 CREATE TABLE IF NOT EXISTS Medicament (
-    Code_Article INTEGER PRIMARY KEY,
+    Code_Article TEXT PRIMARY KEY,
     Nom_Generique TEXT,
     Nom_Commercial TEXT,
     Forme_Pharmaceutique TEXT,
