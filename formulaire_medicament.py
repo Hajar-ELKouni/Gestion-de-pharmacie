@@ -3,6 +3,7 @@ from tkinter import ttk, messagebox
 from tkcalendar import DateEntry
 import sqlite3
 
+
 class FormulaireMedicament:
     def __init__(self, parent, bg_color, button_color, entry_bg_color):
         # Initialisation de la fenêtre et des couleurs
@@ -19,39 +20,39 @@ class FormulaireMedicament:
         )
         self.label_title.pack(pady=10)
 
-        # Formulaire (centré)
-        self.frame_form = tk.Frame(self.frame, bg=bg_color)
-        self.frame_form.pack(pady=10, padx=20, fill="x", anchor="center")
+        # Organisation des champs en sections
+        self.frame_info_generale = tk.LabelFrame(self.frame, text="Informations Générales", bg=bg_color, fg="black")
+        self.frame_info_generale.pack(fill="x", padx=10, pady=5)
 
-        # Champs de saisie
-        self.entry_code = self.create_input_field(self.frame_form, "Code Article :", 0, 0)
-        self.entry_nom_generique = self.create_input_field(self.frame_form, "Nom Générique :", 1, 0)
-        self.entry_nom_commercial = self.create_input_field(self.frame_form, "Nom Commercial :", 1, 1)
+        self.frame_details = tk.LabelFrame(self.frame, text="Détails Pharmaceutiques", bg=bg_color, fg="black")
+        self.frame_details.pack(fill="x", padx=10, pady=5)
 
+        self.frame_dates = tk.LabelFrame(self.frame, text="Dates et Emplacement", bg=bg_color, fg="black")
+        self.frame_dates.pack(fill="x", padx=10, pady=5)
+
+        # Champs dans la section "Informations Générales"
+        self.entry_code = self.create_input_field(self.frame_info_generale, "Code Article :", 0, 0)
+        self.entry_nom_generique = self.create_input_field(self.frame_info_generale, "Nom Générique :", 0, 1)
+        self.entry_nom_commercial = self.create_input_field(self.frame_info_generale, "Nom Commercial :", 1, 0)
+
+        # Champs dans la section "Détails Pharmaceutiques"
         formes = ["Comprimé", "Solution", "Injection", "Pommade"]
-        self.combobox_forme = self.create_input_field(self.frame_form, "Forme Pharmaceutique :", 2, 0, "combobox", formes)
+        self.combobox_forme = self.create_input_field(self.frame_details, "Forme Pharmaceutique :", 0, 0, "combobox", formes)
+        self.entry_dosage = self.create_input_field(self.frame_details, "Dosage :", 0, 1)
+        self.entry_prix = self.create_input_field(self.frame_details, "Prix Unitaire :", 1, 0)
+        self.entry_seuil = self.create_input_field(self.frame_details, "Seuil d'Approvisionnement :", 1, 1)
 
-        self.entry_dosage = self.create_input_field(self.frame_form, "Dosage :", 2, 1)
-        self.entry_prix = self.create_input_field(self.frame_form, "Prix Unitaire :", 3, 0)
-        self.entry_seuil = self.create_input_field(self.frame_form, "Seuil d'Approvisionnement :", 3, 1)
+        # Champs dans la section "Dates et Emplacement"
+        self.date_fab = self.create_input_field(self.frame_dates, "Date de Fabrication :", 0, 0, "date")
+        self.date_exp = self.create_input_field(self.frame_dates, "Date d'Expiration :", 0, 1, "date")
+        self.entry_emplacement = self.create_input_field(self.frame_dates, "Emplacement :", 1, 0)
 
-        self.date_fab = self.create_input_field(self.frame_form, "Date de Fabrication :", 4, 0, "date")
-        self.date_exp = self.create_input_field(self.frame_form, "Date d'Expiration :", 4, 1, "date")
-
-        self.entry_emplacement = self.create_input_field(self.frame_form, "Emplacement :", 5, 0)
-
-        self.combobox_fournisseur = self.create_input_field(
-            self.frame_form, "Fournisseur :", 5, 1, "combobox"
-        )
+        self.combobox_fournisseur = self.create_input_field(self.frame_dates, "Fournisseur :", 1, 1, "combobox")
         self.load_fournisseurs()
 
-        # Zone pour afficher les erreurs
-        self.error_label_code = self.create_error_label(self.frame_form, 0, 2)
-        self.error_label_nom_generique = self.create_error_label(self.frame_form, 1, 2)
-        self.error_label_nom_commercial = self.create_error_label(self.frame_form, 1, 3)
-        self.error_label_prix = self.create_error_label(self.frame_form, 3, 2)
-        self.error_label_seuil = self.create_error_label(self.frame_form, 3, 3)
-        self.error_label_dates = self.create_error_label(self.frame_form, 4, 2)
+        # Label global pour les erreurs
+        self.error_label = tk.Label(self.frame, text="", fg="red", bg=bg_color, wraplength=400, justify="left")
+        self.error_label.pack(pady=5)
 
         # Boutons
         self.frame_buttons = tk.Frame(self.frame, bg=bg_color)
@@ -83,7 +84,6 @@ class FormulaireMedicament:
         self.load_table()
 
     def create_input_field(self, frame, label_text, row, col, widget_type="entry", options=None):
-        # Fonction utilitaire pour créer des champs d'entrée
         label = tk.Label(frame, text=label_text, bg=self.bg_color)
         label.grid(row=row, column=col * 2, padx=5, pady=5, sticky="w")
 
@@ -100,11 +100,6 @@ class FormulaireMedicament:
             date_picker.grid(row=row, column=col * 2 + 1, padx=5, pady=5)
             return date_picker
 
-    def create_error_label(self, frame, row, col):
-        error_label = tk.Label(frame, text="", fg="red", bg=self.bg_color)
-        error_label.grid(row=row, column=col, padx=5, pady=5, sticky="w")
-        return error_label
-
     def load_fournisseurs(self):
         try:
             connexion = sqlite3.connect("PharmacyManagement.db")
@@ -120,7 +115,6 @@ class FormulaireMedicament:
             connexion.close()
 
     def load_table(self):
-        # Charge les médicaments depuis la base de données dans le tableau
         for i in self.table.get_children():
             self.table.delete(i)
 
@@ -137,62 +131,37 @@ class FormulaireMedicament:
             connexion.close()
 
     def ajouter(self):
-        # Réinitialiser les messages d'erreur
-        self.error_label_code.config(text="")
-        self.error_label_nom_generique.config(text="")
-        self.error_label_nom_commercial.config(text="")
-        self.error_label_prix.config(text="")
-        self.error_label_seuil.config(text="")
-        self.error_label_dates.config(text="")
-
-        # Vérification des champs
-        errors = False
+        errors = []
 
         if not self.entry_code.get():
-            self.error_label_code.config(text="Le code article est obligatoire.")
-            errors = True
+            errors.append("Le code article est obligatoire.")
         if not self.entry_nom_generique.get():
-            self.error_label_nom_generique.config(text="Le nom générique est obligatoire.")
-            errors = True
+            errors.append("Le nom générique est obligatoire.")
         if not self.entry_nom_commercial.get():
-            self.error_label_nom_commercial.config(text="Le nom commercial est obligatoire.")
-            errors = True
-
-        # Vérification des types pour prix et seuil
-        try:
-            prix = float(self.entry_prix.get()) if self.entry_prix.get() else 0.0
-            self.error_label_prix.config(text="")  # Si prix valide, effacer l'erreur
-        except ValueError:
-            self.error_label_prix.config(text="Le prix doit être un nombre valide.")
-            errors = True
+            errors.append("Le nom commercial est obligatoire.")
 
         try:
-            seuil = int(self.entry_seuil.get()) if self.entry_seuil.get() else 0
-            self.error_label_seuil.config(text="")  # Si seuil valide, effacer l'erreur
+            float(self.entry_prix.get())
         except ValueError:
-            self.error_label_seuil.config(text="Le seuil doit être un nombre entier.")
-            errors = True
+            errors.append("Le prix doit être un nombre valide.")
 
-        # Validation des dates
+        try:
+            int(self.entry_seuil.get())
+        except ValueError:
+            errors.append("Le seuil doit être un nombre entier.")
+
         try:
             date_fab = self.date_fab.get_date()
             date_exp = self.date_exp.get_date()
-
             if date_exp <= date_fab:
-                self.error_label_dates.config(text="La date d'expiration doit être après la date de fabrication.")
-                errors = True
-            else:
-                self.error_label_dates.config(text="")  # Si dates valides, effacer l'erreur
+                errors.append("La date d'expiration doit être après la date de fabrication.")
+        except Exception:
+            errors.append("Erreur dans les dates.")
 
-        except Exception as e:
-            self.error_label_dates.config(text="Erreur dans les dates.")
-            errors = True
-
-        # Si des erreurs, arrêter le processus
         if errors:
+            self.error_label.config(text="\n".join(errors))
             return
 
-        # Ajouter à la base de données si tout est valide
         try:
             connexion = sqlite3.connect("PharmacyManagement.db")
             curseur = connexion.cursor()
@@ -208,14 +177,13 @@ class FormulaireMedicament:
             INSERT INTO Medicament (Code_Article, Nom_Generique, Nom_Commercial, Forme_Pharmaceutique, Dosage,
                                     Prix_Unitaire, Date_Fab, Date_Exp, Emplacement, Seuil_Approv, Statut, Avec_Ordonnance)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (code, nom_generique, nom_commercial, forme, dosage, prix, date_fab, date_exp,
-                  emplacement, seuil, "Disponible", 0))
+            """, (code, nom_generique, nom_commercial, forme, dosage, float(self.entry_prix.get()), date_fab, date_exp,
+                  emplacement, int(self.entry_seuil.get()), "Disponible", 0))
 
             connexion.commit()
             messagebox.showinfo("Succès", "Médicament ajouté avec succès !")
             self.load_table()
 
-            # Réinitialisation des champs après ajout
             self.entry_code.delete(0, tk.END)
             self.entry_nom_generique.delete(0, tk.END)
             self.entry_nom_commercial.delete(0, tk.END)
@@ -228,21 +196,16 @@ class FormulaireMedicament:
             messagebox.showerror("Erreur", f"Erreur lors de l'ajout : {e}")
         finally:
             connexion.close()
-
-    def modifier(self):
-        # Code pour la modification des médicaments
-        pass
-
-    def supprimer(self):
-        # Code pour la suppression des médicaments
-        pass
-
-    def rechercher(self):
-        # Code pour la recherche des médicaments
-        pass
-
     def show(self):
+        """Affiche le formulaire."""
         self.frame.pack(fill="both", expand=True)
 
     def hide(self):
+        """Cache le formulaire."""
         self.frame.pack_forget()
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    root.title("Gestion des Médicaments")
+    app = FormulaireMedicament(root, bg_color="#F5F5F5", button_color="#4CAF50", entry_bg_color="#FFFFFF")
+    root.mainloop()
