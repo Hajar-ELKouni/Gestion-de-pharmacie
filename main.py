@@ -2,6 +2,7 @@ import tkinter as tk
 from formulaire_medicament import FormulaireMedicament
 from formulaire_fournisseur import FormulaireFournisseur
 from formulaire_Client import Formulaireclient
+from formulaire_facture import FormulaireFacture
 
 class Application:
     def __init__(self, root):
@@ -52,6 +53,17 @@ class Application:
             fg="#FDFEFE",
         )
         self.button_clients.pack(pady=15)
+        
+        self.button_facture = tk.Button(
+            self.sidebar,
+            text="Gestion des Factures",
+            command=self.show_facture,
+            width=20,
+            pady=10,
+            bg=self.button_bg_color,
+            fg="#FDFEFE",
+        )
+        self.button_facture.pack(pady=15)
 
         # Main frame
         self.main_frame = tk.Frame(root, bg=self.main_bg_color)
@@ -65,6 +77,9 @@ class Application:
             self.main_frame, self.main_bg_color, self.button_bg_color
         )
         self.page_clients = Formulaireclient(
+            self.main_frame, self.main_bg_color, self.button_bg_color
+        )
+        self.page_facture = FormulaireFacture(
             self.main_frame, self.main_bg_color, self.button_bg_color
         )
 
@@ -82,11 +97,16 @@ class Application:
     def show_clients(self):
         self.hide_all_pages()
         self.page_clients.show()
+        
+    def show_facture(self):
+        self.hide_all_pages()
+        self.page_facture.show()
 
     def hide_all_pages(self):
         self.page_medecaments.hide()
         self.page_fournisseurs.hide()
         self.page_clients.hide()
+        self.page_facture.hide()
 
 if __name__ == "__main__":
     root = tk.Tk()
