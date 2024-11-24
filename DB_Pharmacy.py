@@ -1,7 +1,7 @@
 import sqlite3
 
 # Connect to the SQLite database
-connexion = sqlite3.connect("PharmacyManagement.db")
+connexion = sqlite3.connect("DB_Pharmacy.db")
 curseur = connexion.cursor()
 
 # Create tables
@@ -62,6 +62,7 @@ CREATE TABLE IF NOT EXISTS Vente (
 curseur.execute('''
 CREATE TABLE IF NOT EXISTS Client (
     id_C INTEGER PRIMARY KEY AUTOINCREMENT,
+    Prenom_C TEXT,
     Nom_C TEXT,
     Telephone_C TEXT,
     Date_Naissance DATE

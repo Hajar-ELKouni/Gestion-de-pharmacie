@@ -1,11 +1,12 @@
 import tkinter as tk
 from formulaire_medicament import FormulaireMedicament
 from formulaire_fournisseur import FormulaireFournisseur
+from formulaire_Client import Formulaireclient
 
 class Application:
     def __init__(self, root):
         self.root = root
-        self.root.title("Gestion des Médicaments et Fournisseurs")
+        self.root.title("Gestion des Médicaments, Fournisseurs et Clients")
         self.root.geometry("1200x600")
 
         # Couleurs
@@ -41,6 +42,17 @@ class Application:
         )
         self.button_fournisseurs.pack(pady=15)
 
+        self.button_clients = tk.Button(
+            self.sidebar,
+            text="Gestion des Clients",
+            command=self.show_clients,
+            width=20,
+            pady=10,
+            bg=self.button_bg_color,
+            fg="#FDFEFE",
+        )
+        self.button_clients.pack(pady=15)
+
         # Main frame
         self.main_frame = tk.Frame(root, bg=self.main_bg_color)
         self.main_frame.pack(side="right", fill="both", expand=True)
@@ -52,17 +64,29 @@ class Application:
         self.page_fournisseurs = FormulaireFournisseur(
             self.main_frame, self.main_bg_color, self.button_bg_color
         )
+        self.page_clients = Formulaireclient(
+            self.main_frame, self.main_bg_color, self.button_bg_color
+        )
 
-        # Default page
+        # Page par défaut
         self.show_medecaments()
 
     def show_medecaments(self):
-        self.page_fournisseurs.hide()
+        self.hide_all_pages()
         self.page_medecaments.show()
 
     def show_fournisseurs(self):
-        self.page_medecaments.hide()
+        self.hide_all_pages()
         self.page_fournisseurs.show()
+
+    def show_clients(self):
+        self.hide_all_pages()
+        self.page_clients.show()
+
+    def hide_all_pages(self):
+        self.page_medecaments.hide()
+        self.page_fournisseurs.hide()
+        self.page_clients.hide()
 
 if __name__ == "__main__":
     root = tk.Tk()
