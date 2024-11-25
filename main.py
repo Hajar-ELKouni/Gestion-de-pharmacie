@@ -3,11 +3,12 @@ from formulaire_medicament import FormulaireMedicament
 from formulaire_fournisseur import FormulaireFournisseur
 from formulaire_Client import Formulaireclient
 from formulaire_facture import FormulaireFacture
+from formulaire_ligne_ventes import FormulaireLigneVentes
 
 class Application:
     def __init__(self, root):
         self.root = root
-        self.root.title("Gestion des Médicaments, Fournisseurs et Clients")
+        self.root.title("Gestion des Médicaments, Fournisseurs, Clients et Ventes")
         self.root.geometry("1200x600")
 
         # Couleurs
@@ -53,7 +54,7 @@ class Application:
             fg="#FDFEFE",
         )
         self.button_clients.pack(pady=15)
-        
+
         self.button_facture = tk.Button(
             self.sidebar,
             text="Gestion des Factures",
@@ -64,6 +65,17 @@ class Application:
             fg="#FDFEFE",
         )
         self.button_facture.pack(pady=15)
+
+        self.button_ligne_vente = tk.Button(
+            self.sidebar,
+            text="Gestion des Lignes de Vente",
+            command=self.show_ligne_vente,
+            width=20,
+            pady=10,
+            bg=self.button_bg_color,
+            fg="#FDFEFE",
+        )
+        self.button_ligne_vente.pack(pady=15)
 
         # Main frame
         self.main_frame = tk.Frame(root, bg=self.main_bg_color)
@@ -82,6 +94,9 @@ class Application:
         self.page_facture = FormulaireFacture(
             self.main_frame, self.main_bg_color, self.button_bg_color
         )
+        self.page_ligne_vente = FormulaireLigneVentes(
+            self.main_frame, self.main_bg_color, self.button_bg_color
+        )  # Nouvelle page pour les lignes de vente
 
         # Page par défaut
         self.show_medecaments()
@@ -97,16 +112,22 @@ class Application:
     def show_clients(self):
         self.hide_all_pages()
         self.page_clients.show()
-        
+
     def show_facture(self):
         self.hide_all_pages()
         self.page_facture.show()
+
+    def show_ligne_vente(self):
+        self.hide_all_pages()
+        self.page_ligne_vente.show()  # Afficher la page des lignes de vente
 
     def hide_all_pages(self):
         self.page_medecaments.hide()
         self.page_fournisseurs.hide()
         self.page_clients.hide()
         self.page_facture.hide()
+        self.page_ligne_vente.hide()  # Cacher la page des lignes de vente
+
 
 if __name__ == "__main__":
     root = tk.Tk()

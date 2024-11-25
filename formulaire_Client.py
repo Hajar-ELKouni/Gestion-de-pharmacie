@@ -9,7 +9,7 @@ from tkcalendar import DateEntry
 # Connexion à la base de données SQLite
 def get_db_connection():
     """Retourner une connexion à la base de données."""
-    return sqlite3.connect("PharmacyManagement.db")
+    return sqlite3.connect("DB_Pharmacy.db")
 
 # Validation du téléphone marocain
 def is_valid_phone(telephone):

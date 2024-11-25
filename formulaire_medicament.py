@@ -16,23 +16,7 @@ class FormulaireMedicament:
         self.connexion = sqlite3.connect("DB_Pharmacy.db")
         self.curseur = self.connexion.cursor()
 
-        # Création de la table si elle n'existe pas
-        self.curseur.execute('''
-            CREATE TABLE IF NOT EXISTS Medicament (
-                Code_Article TEXT PRIMARY KEY,
-                Nom_Generique TEXT,
-                Nom_Commercial TEXT,
-                Forme_Pharmaceutique TEXT,
-                Dosage TEXT,
-                Prix_Unitaire REAL,
-                Date_Fab TEXT,
-                Date_Exp TEXT,
-                Emplacement TEXT,
-                Seuil_Approv INTEGER,
-                Statut TEXT,
-                Avec_Ordonnance INTEGER
-            )
-        ''')
+ 
         self.connexion.commit()
 
         # Frame principale
@@ -154,25 +138,83 @@ class FormulaireMedicament:
             messagebox.showerror("Erreur", f"Erreur lors du chargement des données : {e}")
 
     def ajouter_medicament(self):
+       try:
+        # Récupérer les données des champs
+        data = {key: field.get() for key, field in self.fields.items()}
+        data["ordonnance"] = 1 if data["ordonnance"] == "Oui" else 0
+
+        # Supprimer les anciens labels d'erreur
+        for field, widget in self.fields.items():
+            if hasattr(widget, "error_label"):
+                widget.error_label.destroy()
+
+        errors = {}
+
+        # Validation des champs obligatoires
+        champs_obligatoires = [
+            "code_article", "nom_generique", "nom_commercial", "forme",
+            "dosage", "prix_unitaire", "date_fab", "date_exp",
+            "emplacement", "seuil", "statut","ordonnance"
+        ]
+
+        for champ in champs_obligatoires:
+            if not data[champ]:
+                errors[champ] = "Ce champ est obligatoire."
+
+        # Validation du prix unitaire
+        # Validation du prix unitaire
         try:
-            data = {key: field.get() for key, field in self.fields.items()}
-            data["ordonnance"] = 1 if data["ordonnance"] == "Oui" else 0
+          prix = float(data["prix_unitaire"])  # Conversion en float
+          if prix <= 0:
+           errors["prix_unitaire"] = "Doit être un nombre positif."  # Vérifie que le prix est positif
+        except ValueError:
+           errors["prix_unitaire"] = "Doit être un nombre réel valide." 
 
-            if not data["code_article"]:
-                messagebox.showerror("Erreur", "Le champ Code Article est obligatoire.")
-                return
+        # Validation du seuil d'approvisionnement
+        try:
+            seuil = int(data["seuil"])
+            if seuil < 0:
+                errors["seuil"] = "Doit être un entier non négatif."
+        except ValueError:
+            errors["seuil"] = "Doit être un entier valide."
 
-            self.curseur.execute('''
-                INSERT INTO Medicament (Code_Article, Nom_Generique, Nom_Commercial, Forme_Pharmaceutique, Dosage,
-                Prix_Unitaire, Date_Fab, Date_Exp, Emplacement, Seuil_Approv, Statut, Avec_Ordonnance)
-                VALUES (:code_article, :nom_generique, :nom_commercial, :forme, :dosage, :prix_unitaire, :date_fab,
-                :date_exp, :emplacement, :seuil, :statut, :ordonnance)
-            ''', data)
-            self.connexion.commit()
-            self.load_table()
-            messagebox.showinfo("Succès", "Médicament ajouté avec succès.")
-        except sqlite3.Error as e:
-            messagebox.showerror("Erreur", f"Erreur lors de l'ajout : {e}")
+        # Validation des dates
+        from datetime import datetime
+        try:
+            date_fab = datetime.strptime(data["date_fab"], "%Y-%m-%d")
+            date_exp = datetime.strptime(data["date_exp"], "%Y-%m-%d")
+            if date_fab >= date_exp:
+                errors["date_fab"] = "Doit précéder la date d'expiration."
+                errors["date_exp"] = "Doit suivre la date de fabrication."
+        except ValueError:
+            errors["date_fab"] = "Format AAAA-MM-JJ requis."
+            errors["date_exp"] = "Format AAAA-MM-JJ requis."
+
+        # Afficher les erreurs à côté des champs
+        for champ, message in errors.items():
+            widget = self.fields[champ]
+            error_label = tk.Label(self.form_frame, text=message, fg="red", bg="#ffffff", font=("Arial", 8))
+            error_label.grid(row=list(self.fields.keys()).index(champ), column=2, sticky="w", padx=5)
+            widget.error_label = error_label
+
+        # Si des erreurs existent, ne pas insérer dans la base
+        if errors:
+            return
+
+        # Ajout dans la base de données
+        self.curseur.execute('''
+            INSERT INTO Medicament (Code_Article, Nom_Generique, Nom_Commercial, Forme_Pharmaceutique, Dosage,
+            Prix_Unitaire, Date_Fab, Date_Exp, Emplacement, Seuil_Approv, Statut, Avec_Ordonnance)
+            VALUES (:code_article, :nom_generique, :nom_commercial, :forme, :dosage, :prix_unitaire, :date_fab,
+            :date_exp, :emplacement, :seuil, :statut, :ordonnance)
+        ''', data)
+        self.connexion.commit()
+        self.load_table()
+        messagebox.showinfo("Succès", "Médicament ajouté avec succès.")
+       except sqlite3.Error as e:
+        messagebox.showerror("Erreur", f"Erreur lors de l'ajout : {e}")
+
+
 
     def modifier_medicament(self):
         selected = self.table.selection()
