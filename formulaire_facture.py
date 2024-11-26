@@ -359,6 +359,7 @@ class FormulaireFacture:
     def save_sales_to_db(self):
      """Enregistre les lignes de vente dans la table Vente."""
      # Vérifier si le tableau contient des articles
+     num_inscription = self.num_inscription_entry.get().strip()
      if not self.tree.get_children():
          messagebox.showerror("Erreur", "Aucun article à enregistrer dans la base de données.")
          return False
@@ -377,11 +378,42 @@ class FormulaireFacture:
              # Insérer dans la table Vente
              curseur.execute(
                 '''
-                INSERT INTO Vente (Code_Article, Quantite_Vendue, Date_Vente)
-                VALUES (?, ?, ?)
+                INSERT INTO Vente (Code_Article,id_C, Quantite_Vendue, Date_Vente)
+                VALUES (?,?, ?, ?)
                 ''',
-                (code, int(quantity), current_date)
+                (code,num_inscription,int(quantity), current_date)
              )
+             try:
+         # Vérifier la quantité disponible dans la table Medicament
+              curseur.execute(
+             '''
+             SELECT Quantite FROM Medicament WHERE LOWER(Code_Article) = LOWER(?)
+             ''',
+             (code,)
+              )
+              result = curseur.fetchone()
+
+              if result:
+             # Si la quantité existe, vérifier qu'il y a suffisamment de stock
+                 current_quantity = result[0]
+                 if current_quantity >= int(quantity):
+                 # Mettre à jour la quantité en stock dans la table Medicament
+                   curseur.execute(
+                     '''
+                     UPDATE Medicament
+                     SET Quantite = Quantite - ?
+                     WHERE LOWER(Code_Article) = LOWER(?)
+                     ''',
+                     (int(quantity), code)
+                  )
+                 else:
+                   print(f"Quantité insuffisante pour {code}. Stock actuel : {current_quantity}.")
+                 # Vous pouvez ajouter un message d'erreur ou une action supplémentaire ici
+              else:
+                  print(f"Code_Article {code} non trouvé dans la table Medicament.")
+
+             except sqlite3.Error as e:
+              print(f"Erreur lors de la mise à jour de la quantité pour {code}: {e}")
 
          # Valider les changements
          connexion.commit()

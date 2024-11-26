@@ -96,13 +96,22 @@ class FormulaireLigneVentes:
             connexion = sqlite3.connect("DB_Pharmacy.db")
             curseur = connexion.cursor()
 
-            # Sélectionner les ventes du client spécifié
+            # Sélectionner les ventes du client spécifié avec le calcul de prix_total
             rows = curseur.execute(
                 '''
-                SELECT v.id_Vente, v.Code_Article, v.id_C AS id_client, c.Prenom_C || ' ' || c.Nom_C AS nom_complet, v.Date_Vente, v.Quantite_Vendue, NULL AS prix_total
-                FROM Vente v
-                JOIN Client c ON v.id_C = c.id_C
-                WHERE v.id_C = ?
+                SELECT 
+    v.id_Vente,
+    v.Code_Article,
+    v.id_C AS id_client,
+    c.Prenom_C || ' ' || c.Nom_C AS nom_complet,
+    v.Date_Vente,
+    v.Quantite_Vendue,
+    v.Quantite_Vendue * m.Prix_Unitaire AS prix_total
+FROM Vente v
+JOIN Client c ON v.id_C = c.id_C
+JOIN Medicament m ON v.Code_Article = m.Code_Article
+WHERE v.id_C = ?
+
                 ''', (id_client,)
             ).fetchall()
 
@@ -125,13 +134,23 @@ class FormulaireLigneVentes:
             connexion = sqlite3.connect("DB_Pharmacy.db")
             curseur = connexion.cursor()
 
-            # Sélectionner toutes les ventes
+            # Sélectionner toutes les ventes avec le calcul de prix_total
             rows = curseur.execute(
                 '''
-                SELECT v.id_Vente, v.Code_Article, v.id_C AS id_client, c.Prenom_C || ' ' || c.Nom_C AS nom_complet, v.Date_Vente, v.Quantite_Vendue, NULL AS prix_total
-                FROM Vente v
-                JOIN Client c ON v.id_C = c.id_C
-                ''').fetchall()
+                SELECT 
+    v.id_Vente,
+    v.Code_Article,
+    v.id_C AS id_client,
+    c.Prenom_C || ' ' || c.Nom_C AS nom_complet,
+    v.Date_Vente,
+    v.Quantite_Vendue,
+    v.Quantite_Vendue * m.Prix_Unitaire AS prix_total
+FROM Vente v
+JOIN Client c ON v.id_C = c.id_C
+JOIN Medicament m ON v.Code_Article = m.Code_Article
+
+                '''
+            ).fetchall()
 
             connexion.close()
 

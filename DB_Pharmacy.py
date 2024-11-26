@@ -52,9 +52,12 @@ curseur.execute('''
 CREATE TABLE IF NOT EXISTS Vente (
     id_Vente INTEGER PRIMARY KEY AUTOINCREMENT,
     Code_Article INTEGER,
+    id_C INTEGER,
     Quantite_Vendue INTEGER,
     Date_Vente DATE,
     FOREIGN KEY (Code_Article) REFERENCES Medicament(Code_Article)
+    FOREIGN KEY (Code_Article) REFERENCES Client(id_C)
+    
 )
 ''')
 
